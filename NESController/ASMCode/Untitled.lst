@@ -1,0 +1,314 @@
+MPASM  5.41                      UNTITLED.ASM   2-4-2012  20:40:44         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001     list      p=16F84A             ; list directive to define processor
+                      00002     #include <p16F84a.inc>         ; processor specific variable definitions
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F84A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2011 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00201         LIST
+                      00003 
+2007   3FF7           00004     __CONFIG   _CP_OFF & _WDT_ON & _PWRTE_ON & _RC_OSC
+                      00005 
+                      00006 ; '__CONFIG' directive is used to embed configuration data within .asm file.
+                      00007 ; The lables following the directive are located in the respective .inc file.
+                      00008 ; See respective data sheet for additional information on configuration word.
+                      00009 
+                      00010 ;***** VARIABLE DEFINITIONS
+  0000000C            00011 w_temp        EQU     0x0C        ; variable used for context saving 
+  0000000D            00012 status_temp   EQU     0x0D        ; variable used for context saving
+  0000000C            00013 STORAGE           EQU     0Ch
+                      00014 
+                      00015 ;**********************************************************************
+                      00016 
+0000                  00017 start1:
+0000   1683           00018                 bsf             STATUS,5                ;Get to bank 1
+0001   3001           00019                 movlw   b'00001'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0002   0085           00020                 movwf   TRISA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0003   0186           00021                 clrf    TRISB                           ;Setting all portb to output
+0004   1283           00022                 bcf             STATUS,5
+0005   0185           00023                 clrf    PORTA                           ;get to familiar setting for NES controller
+0006   0186           00024                 clrf    PORTB   
+0007   018C           00025                 clrf    STORAGE                         ;clear our storage
+                      00026 
+0008                  00027 start2:
+                      00028                 
+0008   0185           00029                 clrf PORTA
+0009   0186           00030                 clrf PORTB
+000A   018C           00031                 clrf STORAGE
+                      00032 
+                      00033                 ;Create the latch output
+000B   1485           00034                 bsf             PORTA,1                 ;Set latch HIGH
+000C                  00035 Delay_12:
+Message[313]: CBLOCK constants will start with a value of 0.
+                      00036                 cblock
+  00000000            00037                 d1
+  00000001            00038                 d2
+                      00039                 endc
+                      00040 
+                      00041                         ;11998 cycles
+MPASM  5.41                      UNTITLED.ASM   2-4-2012  20:40:44         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000C   305F           00042                 movlw   0x5F
+000D   0080           00043                 movwf   d1
+000E   300A           00044                 movlw   0x0A
+000F   0081           00045                 movwf   d2
+0010                  00046 Delay_0
+0010   0B80           00047                 decfsz  d1, f
+0011   2813           00048                 goto    $+2
+0012   0B81           00049                 decfsz  d2, f
+0013   2810           00050                 goto    Delay_0
+                      00051                                 ;2 cycles
+0014   2815           00052                 goto    $+1
+                      00053 
+                      00054                 ;need 12us delay here
+0015   1085           00055                 bcf             PORTA,1                 ;Set latch LOW
+                      00056                 ;need 6us delay here?
+0016   2042           00057                 call Delay_6
+                      00058 
+                      00059 
+                      00060 
+                      00061 
+                      00062 
+                      00063                 ;Get data 8 times
+0017   1C05           00064                 btfss   PORTA,0
+0018   140C           00065                 bsf             STORAGE,0
+0019   2039           00066                 call    ReadData
+001A   2039           00067                 call    ReadData
+001B   2039           00068                 call    ReadData
+001C   2039           00069                 call    ReadData
+001D   2039           00070                 call    ReadData
+001E   2039           00071                 call    ReadData
+001F   2039           00072                 call    ReadData
+                      00073 
+                      00074                 ;Initiate correct parallel outputs
+0020   180C           00075                 btfsc   STORAGE,0
+0021   1786           00076                 bsf             PORTB,7
+0022   1386           00077                 bcf             PORTB,7
+                      00078 
+0023   188C           00079                 btfsc   STORAGE,1
+0024   1706           00080                 bsf             PORTB,6
+0025   1306           00081                 bcf             PORTB,6
+                      00082 
+0026   190C           00083                 btfsc   STORAGE,2
+0027   1686           00084                 bsf             PORTB,5
+0028   1286           00085                 bcf             PORTB,5
+                      00086 
+0029   198C           00087                 btfsc   STORAGE,3
+002A   1606           00088                 bsf             PORTB,4
+002B   1206           00089                 bcf             PORTB,4
+                      00090 
+002C   1A0C           00091                 btfsc   STORAGE,4
+002D   1586           00092                 bsf             PORTB,3
+002E   1186           00093                 bcf             PORTB,3
+                      00094 
+MPASM  5.41                      UNTITLED.ASM   2-4-2012  20:40:44         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+002F   1A8C           00095                 btfsc   STORAGE,5
+0030   1506           00096                 bsf             PORTB,2
+0031   1106           00097                 bcf             PORTB,2
+                      00098 
+0032   1B0C           00099                 btfsc   STORAGE,6
+0033   1486           00100                 bsf             PORTB,1
+0034   1086           00101                 bcf             PORTB,1
+                      00102 
+0035   1B8C           00103                 btfsc   STORAGE,7
+0036   1406           00104                 bsf             PORTB,0
+0037   1006           00105                 bcf             PORTB,0
+                      00106                 
+0038   2808           00107         goto start2
+                      00108 
+Warning[207]: Found label after column 1. (ReadData)
+0039                  00109                 ReadData
+                      00110                         ;6us delay here
+0039   2042           00111                         call Delay_6
+003A   1505           00112                         bsf PORTA,2             ;Set clock HIGH
+003B   1C05           00113                         btfss   PORTA,0
+Message[305]: Using default destination of 1 (file).
+003C   0D8C           00114                         rlf     STORAGE ;Move current STORAGE value left
+003D   140C           00115                         bsf     STORAGE,0       ;Put new value in STORAGE
+                      00116                         ;6us delay here
+003E   2042           00117                         call Delay_6
+003F   1105           00118                         bcf PORTA,2             ;Set clock LOW
+0040   0008           00119                 return          
+                      00120 
+0041   2841           00121         goto $
+                      00122 
+0042                  00123 Delay_6:
+                      00124                 cblock
+  00000002            00125                 d3
+  00000003            00126                 d4
+                      00127                 endc
+                      00128 
+                      00129                         ;5998 cycles
+0042   30AF           00130                 movlw   0xAF
+0043   0082           00131                 movwf   d3
+0044   3005           00132                 movlw   0x05
+0045   0083           00133                 movwf   d4
+0046                  00134 Delay_1
+0046   0B82           00135                 decfsz  d3, f
+0047   2849           00136                 goto    $+2
+0048   0B82           00137                 decfsz  d3, f
+0049   2846           00138                 goto    Delay_1
+                      00139 
+                      00140                         ;2 cycles
+004A   0008           00141                 return
+                      00142 
+                      00143         END
+MPASM  5.41                      UNTITLED.ASM   2-4-2012  20:40:44         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+C                                 00000000
+DC                                00000001
+Delay_0                           00000010
+Delay_1                           00000046
+Delay_12                          0000000C
+Delay_6                           00000042
+EEADR                             00000009
+EECON1                            00000088
+EECON2                            00000089
+EEDATA                            00000008
+EEIE                              00000006
+EEIF                              00000004
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_PD                            00000003
+NOT_RBPU                          00000007
+NOT_TO                            00000004
+OPTION_REG                        00000081
+PCL                               00000002
+PCLATH                            0000000A
+PORTA                             00000005
+PORTB                             00000006
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+ReadData                          00000039
+STATUS                            00000003
+MPASM  5.41                      UNTITLED.ASM   2-4-2012  20:40:44         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+STORAGE                           0000000C
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_CONFIG                           00002007
+_CP_OFF                           00003FFF
+_CP_ON                            0000000F
+_DEVID1                           00002006
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F84A                          00000001
+d1                                00000000
+d2                                00000001
+d3                                00000002
+d4                                00000003
+start1                            00000000
+start2                            00000008
+status_temp                       0000000D
+w_temp                            0000000C
+MPASM  5.41                      UNTITLED.ASM   2-4-2012  20:40:44         PAGE  6
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXX----- ---------------- ---------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    75
+Program Memory Words Free:   949
+
+
+Errors   :     0
+Warnings :     1 reported,     0 suppressed
+Messages :     4 reported,     0 suppressed
+
+

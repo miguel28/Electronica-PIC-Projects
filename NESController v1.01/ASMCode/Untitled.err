@@ -1,0 +1,5 @@
+Message[302] C:\USERS\MIKE\DESKTOP\UNTITLED.ASM 20 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\MIKE\DESKTOP\UNTITLED.ASM 21 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[313] C:\USERS\MIKE\DESKTOP\UNTITLED.ASM 36 : CBLOCK constants will start with a value of 0.
+Warning[207] C:\USERS\MIKE\DESKTOP\UNTITLED.ASM 109 : Found label after column 1. (ReadData)
+Message[305] C:\USERS\MIKE\DESKTOP\UNTITLED.ASM 114 : Using default destination of 1 (file).
